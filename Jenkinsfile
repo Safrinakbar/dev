@@ -2,28 +2,32 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
+        stage('scm') {
             steps {
-                git 'https://github.com/Safrinakbar/dev.git'
+        git branch: 'main', url: 'https://github.com/Safrinakbar/dev.git'
             }
         }
-
-        stage('Build') {
+        stage('build') {
             steps {
-                sh 'mvn clean package'
-            }
-        }
-
-        stage('Test') {
+               shell "mvn clean"
+               shell "mvn install"
+}
+}
+stage('build to images') {
             steps {
-                sh 'mvn test'
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo 'Deploying application...'
-            }
-        }
+               script{
+                  shell 'docker build -t safrinbaragna/simplewebapp .'
+               }
     }
+}
+stage('push to hub') {
+            steps {
+               script{
+                 withDockerRegistry(credentialsId: 'Docker_cred', url: 'https://index.docker.io/v1/') {
+                  shell 'docker push safrinbaragna/simplewebapp'
+               }
+            }
+            }
+}
+}
 }
